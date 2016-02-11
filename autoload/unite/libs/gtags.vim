@@ -64,7 +64,7 @@ function! unite#libs#gtags#get_project_config(key)
   if !exists("g:unite_source_gtags_project_config") || type(g:unite_source_gtags_project_config) != type({})
     return s:default_project_config_value[a:key]
   endif
-  let l:gtags_root_dir = exists("$GTAGSROOT") ? $GTAGSROOT : fnamemodify(".", ':p')
+  let l:gtags_root_dir = exists("$GTAGSROOT") ? $GTAGSROOT : fnamemodify(findfile('GTAGS', '.;'), ':p:h')
   let l:cd_config = get(g:unite_source_gtags_project_config, l:gtags_root_dir, get(g:unite_source_gtags_project_config, '_'))
   if type(l:cd_config) == type({})
     return get(l:cd_config, a:key, s:default_project_config_value[a:key])
@@ -89,8 +89,11 @@ function! unite#libs#gtags#exec_global(short_option, long_option, pattern)
   let l:gtags_libpath = unite#libs#gtags#get_project_config("gtags_libpath")
   if !empty(l:gtags_libpath)
     if type(l:gtags_libpath) == type([])
-      " TODO: judge platform (*nix or windows)
-      let l:cmd = "GTAGSLIBPATH=" . $GTAGSLIBPATH . ':' . join(l:gtags_libpath, ':') . ' ' . l:cmd
+      if has('win32')
+        let l:cmd = "set GTAGSLIBPATH=" . $GTAGSLIBPATH . ';' . join(l:gtags_libpath, ';') . ' & ' . l:cmd
+      else
+        let l:cmd = "GTAGSLIBPATH=" . $GTAGSLIBPATH . ':' . join(l:gtags_libpath, ':') . ' ' . l:cmd
+      endif
     else
       call unite#print_error('[unite-gtags] gtags_libpath must be list')
     endif
@@ -137,7 +140,7 @@ function! unite#libs#gtags#result2unite(source, result, context)
         \ 's:format["'. unite#libs#gtags#get_global_config("result_option") . '"].func(v:val)')
   let l:candidates = filter(l:candidates, '!empty(v:val)')
   let l:candidates = map(l:candidates, 'extend(v:val, {"source" : a:source})')
-  let a:context.is_treelized = !(a:context.immediately && len(l:candidates) == 1) && 
+  let a:context.is_treelized = !(a:context.immediately && len(l:candidates) == 1) &&
         \ unite#libs#gtags#get_project_config('treelize')
   if a:context.is_treelized
     return unite#libs#gtags#treelize(l:candidates)
