@@ -90,7 +90,7 @@ function! unite#libs#gtags#exec_global(short_option, long_option, pattern)
   if !empty(l:gtags_libpath)
     if type(l:gtags_libpath) == type([])
       if has('win32')
-        let l:cmd = "set GTAGSLIBPATH=" . $GTAGSLIBPATH . ';' . join(l:gtags_libpath, ';') . ' & ' . l:cmd
+        let l:cmd = "set GTAGSLIBPATH=" . $GTAGSLIBPATH . ';' . join(l:gtags_libpath, ';') . '; & ' . l:cmd
       else
         let l:cmd = "GTAGSLIBPATH=" . $GTAGSLIBPATH . ':' . join(l:gtags_libpath, ':') . ' ' . l:cmd
       endif
